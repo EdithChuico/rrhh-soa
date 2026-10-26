@@ -5,7 +5,6 @@ const rateLimit = require('express-rate-limit');
 const winston = require('winston');
 const auth = require('./middlewares/auth');
 const app = express();
-app.use(express.json());
 const logger = winston.createLogger({
     transports: [new winston.transports.Console({
         format: winston.format.combine(
@@ -24,10 +23,11 @@ app.use((req, _, next) => {
     logger.info(`${req.method} ${req.url}`);
     next();
 });
-app.use('/auth/login', require('./routes/auth'));
+app.use('/auth/login', express.json(), require('./routes/auth'));
 const proxyOpts = (target, name) => ({
     target,
     changeOrigin: true,
+    pathRewrite: { '^/api': '' }, // <--- AGREGA ESTA LÍNEA AQUÍ
     on: {
         error: (err, req, res) => {
             logger.error(`[${name}] ${err.message}`);
